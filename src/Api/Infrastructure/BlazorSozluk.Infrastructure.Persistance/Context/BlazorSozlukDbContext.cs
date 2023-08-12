@@ -38,15 +38,7 @@ public class BlazorSozlukDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            //var connStr = "Data Source=DESKTOP-7CORDPF;Initial Catalog=shoppinglist;Persist Security Info=True;User ID=ba;Password=Berkan123456";
-            //optionsBuilder.UseSqlServer(connStr, opt =>
-            //{
-            //    opt.EnableRetryOnFailure();
-            //}); 
-
-            //It Works In Design Time When We Adding Migration.
-
-            var connStr = "Server=(localdb)\\MSSQLLocalDB;Database=ecommerce;Trusted_Connection=True";
+            var connStr = "Server=(localdb)\\MSSQLLocalDB;Database=blazorsozluk;Trusted_Connection=True";
             optionsBuilder.UseSqlServer(connStr, opt =>
             {
                 opt.EnableRetryOnFailure();
