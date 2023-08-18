@@ -13,13 +13,14 @@ namespace BlazorSozluk.Infrastructure.Persistance.Repositories;
 
 public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : BaseEntity
 {
-    private readonly BlazorSozlukDbContext _context;
+    private readonly DbContext dbContext;
 
-    protected DbSet<TEntity> entity => _context.Set<TEntity>();
+
+    protected DbSet<TEntity> entity => dbContext.Set<TEntity>();
 
     public GenericRepository(DbContext dbContext)
     {
-        this._context = _context ?? throw new ArgumentNullException(nameof(_context));
+        this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
     }
 
     #region Insert Methods
@@ -27,13 +28,13 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
     public virtual async Task<int> AddAsync(TEntity entity)
     {
         await this.entity.AddAsync(entity);
-        return await _context.SaveChangesAsync();
+        return await dbContext.SaveChangesAsync();
     }
 
     public virtual int Add(TEntity entity)
     {
         this.entity.Add(entity);
-        return _context.SaveChanges();
+        return dbContext.SaveChanges();
     }
 
     public virtual async Task<int> AddAsync(IEnumerable<TEntity> entities)
@@ -42,7 +43,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
             return 0;
 
         await entity.AddRangeAsync(entities);
-        return await _context.SaveChangesAsync();
+        return await dbContext.SaveChangesAsync();
     }
 
     public virtual int Add(IEnumerable<TEntity> entities)
@@ -51,7 +52,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
             return 0;
 
         entity.AddRange(entity);
-        return _context.SaveChanges();
+        return dbContext.SaveChanges();
     }
 
     #endregion
@@ -61,17 +62,17 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
     public virtual async Task<int> UpdateAsync(TEntity entity)
     {
         this.entity.Attach(entity);
-        _context.Entry(entity).State = EntityState.Modified;
+        dbContext.Entry(entity).State = EntityState.Modified;
 
-        return await _context.SaveChangesAsync();
+        return await dbContext.SaveChangesAsync();
     }
 
     public virtual int Update(TEntity entity)
     {
         this.entity.Attach(entity);
-        _context.Entry(entity).State = EntityState.Modified;
+        dbContext.Entry(entity).State = EntityState.Modified;
 
-        return _context.SaveChanges();
+        return dbContext.SaveChanges();
     }
 
     #endregion
@@ -80,14 +81,14 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
     public virtual Task<int> DeleteAsync(TEntity entity)
     {
-        if (_context.Entry(entity).State == EntityState.Detached)
+        if (dbContext.Entry(entity).State == EntityState.Detached)
         {
             this.entity.Attach(entity);
         }
 
         this.entity.Remove(entity);
 
-        return _context.SaveChangesAsync();
+        return dbContext.SaveChangesAsync();
     }
 
     public virtual Task<int> DeleteAsync(Guid id)
@@ -104,26 +105,26 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
     public virtual int Delete(TEntity entity)
     {
-        if (_context.Entry(entity).State == EntityState.Detached)
+        if (dbContext.Entry(entity).State == EntityState.Detached)
         {
             this.entity.Attach(entity);
         }
 
         this.entity.Remove(entity);
 
-        return _context.SaveChanges();
+        return dbContext.SaveChanges();
     }
 
     public virtual bool DeleteRange(Expression<Func<TEntity, bool>> predicate)
     {
-        _context.RemoveRange(entity.Where(predicate));
-        return _context.SaveChanges() > 0;
+        dbContext.RemoveRange(entity.Where(predicate));
+        return dbContext.SaveChanges() > 0;
     }
 
     public virtual async Task<bool> DeleteRangeAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        _context.RemoveRange(entity.Where(predicate));
-        return await _context.SaveChangesAsync() > 0;
+        dbContext.RemoveRange(entity.Where(predicate));
+        return await dbContext.SaveChangesAsync() > 0;
     }
 
     #endregion
@@ -134,17 +135,17 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
     {
         // check the entity with the id already tracked
         if (!this.entity.Local.Any(i => EqualityComparer<Guid>.Default.Equals(i.Id, entity.Id)))
-            _context.Update(entity);
+            dbContext.Update(entity);
 
-        return _context.SaveChangesAsync();
+        return dbContext.SaveChangesAsync();
     }
 
     public virtual int AddOrUpdate(TEntity entity)
     {
         if (!this.entity.Local.Any(i => EqualityComparer<Guid>.Default.Equals(i.Id, entity.Id)))
-            _context.Update(entity);
+            dbContext.Update(entity);
 
-        return _context.SaveChanges();
+        return dbContext.SaveChanges();
     }
 
     #endregion
@@ -214,11 +215,11 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
             return null;
 
         if (noTracking)
-            _context.Entry(found).State = EntityState.Detached;
+            dbContext.Entry(found).State = EntityState.Detached;
 
         foreach (Expression<Func<TEntity, object>> include in includes)
         {
-            _context.Entry(found).Reference(include).Load();
+            dbContext.Entry(found).Reference(include).Load();
         }
 
         return found;
@@ -251,14 +252,14 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
         if (ids != null && !ids.Any())
             return Task.CompletedTask;
 
-        _context.RemoveRange(entity.Where(i => ids.Contains(i.Id)));
-        return _context.SaveChangesAsync();
+        dbContext.RemoveRange(entity.Where(i => ids.Contains(i.Id)));
+        return dbContext.SaveChangesAsync();
     }
 
     public virtual Task BulkDelete(Expression<Func<TEntity, bool>> predicate)
     {
-        _context.RemoveRange(entity.Where(predicate));
-        return _context.SaveChangesAsync();
+        dbContext.RemoveRange(entity.Where(predicate));
+        return dbContext.SaveChangesAsync();
     }
 
     public virtual Task BulkDelete(IEnumerable<TEntity> entities)
@@ -267,7 +268,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
             return Task.CompletedTask;
 
         entity.RemoveRange(entities);
-        return _context.SaveChangesAsync();
+        return dbContext.SaveChangesAsync();
     }
 
     public virtual Task BulkUpdate(IEnumerable<TEntity> entities)
@@ -280,7 +281,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
             entity.Update(entityItem);
         }
 
-        return _context.SaveChangesAsync();
+        return dbContext.SaveChangesAsync();
     }
 
     public virtual async Task BulkAdd(IEnumerable<TEntity> entities)
@@ -290,7 +291,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
         await entity.AddRangeAsync(entities);
 
-        await _context.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
     }
 
     #endregion
@@ -299,12 +300,12 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
     public Task<int> SaveChangesAsync()
     {
-        return _context.SaveChangesAsync();
+        return dbContext.SaveChangesAsync();
     }
 
     public int SaveChanges()
     {
-        return _context.SaveChanges();
+        return dbContext.SaveChanges();
     }
 
     #endregion
