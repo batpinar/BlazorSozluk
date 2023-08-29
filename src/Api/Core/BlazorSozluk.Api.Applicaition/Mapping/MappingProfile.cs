@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BlazorSozluk.Api.Domain.Models;
 using BlazorSozluk.Common.Models.Queries;
+using BlazorSozluk.Common.Models.RequestModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace BlazorSozluk.Api.Applicaition.Mapping
             #region User Mapping
             CreateMap<User, LoginUserViewModel>()
                 .ReverseMap();
+            CreateMap<CreateUserCommand, User>();
+            CreateMap<UpdateUserCommand, User>();
             #endregion
         }
     }
